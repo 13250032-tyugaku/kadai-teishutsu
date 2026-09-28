@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提出課題マネージャー</title>
+    <!-- 🟢 ゼン丸ゴシックを最優先で強力に読み込む設定 -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="kadai-style.css?v=2">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダーエリア -->
+        <div class="h1-wrapper">
+            <h1>📝 提出課題マネージャー</h1>
+            <div class="header-btns">
+                <a href="#" class="survey-top-btn">アンケートはこちら</a>
+                <button id="settings-toggle-btn" class="settings-btn">⚙ 設定</button>
+            </div>
+        </div>
+
+        <!-- ⌨ 課題の手動入力エリア -->
+        <div class="input-box-group">
+            <div class="input-form-row">
+                <input type="text" id="task-name" class="flex-input" placeholder="課題名を入力">
+                <select id="task-subject">
+                    <!-- JavaScriptから動的に挿入 -->
+                </select>
+                <div class="date-input-wrapper">
+                    <input type="text" id="task-month" class="date-input" placeholder="月">
+                    <span class="time-colon">/</span>
+                    <input type="text" id="task-day" class="date-input" placeholder="日">
+                </div>
+                <div class="time-select-group">
+                    <select id="task-hour">
+                        <option value="">指定なし</option>
+                        <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+                        <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+                        <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+                        <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+                        <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                        <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+                        <option value="24">24</option>
+                    </select>
+                    <span id="task-colon" class="time-colon">:</span>
+                    <select id="task-minute">
+                        <option value="00">00</option>
+                        <option value="30">30</option>
+                    </select>
+                </div>
+                <button id="add-btn">追加</button>
+            </div>
+        </div>
+
+        <!-- タブコンテンツ領域 -->
+        <div class="tab-content-wrapper">
+            <!-- 一覧画面 -->
+            <div id="content-all" class="tab-content active">
+                <ul id="task-list"></ul>
+            </div>
+
+            <!-- カレンダー画面 -->
+            <div id="content-calendar" class="tab-content">
+                <p style="text-align: center; padding: 30px; color: #777; font-size: 18px;">現在開発中です。</p>
+            </div>
+        </div>
+
+        <!-- 📱 シンプルなボトムタブナビゲーション -->
+        <div class="bottom-tab-nav">
+            <div class="tab-item-btn active" id="tab-all" onclick="switchTab('all')">一覧</div>
+            <div class="tab-item-btn" id="tab-calendar" onclick="switchTab('calendar')">カレンダー</div>
+        </div>
+    </div>
+
+    <!-- ⚙ 設定モーダル -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h3 style="margin:0; font-size: 16px; font-weight: bold;">⚙ アプリの設定</h3>
+                <button id="settings-close-btn" class="modal-close-x">&times;</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item" style="margin-bottom: 15px;">
+                    <label class="switch-label">
+                        <input type="checkbox" id="setting-darkmode-toggle">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <span class="setting-text">🌙 ダークモードを有効にする</span>
+                </div>
+                
+                <div class="setting-item" style="margin-bottom: 15px;">
+                    <label class="switch-label">
+                        <input type="checkbox" id="setting-notify-toggle">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <span class="setting-text">🔔 アプリからの通知送信を許可する</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span class="setting-text">⏰ 通知するタイミング：</span>
+                    <select id="setting-notify-timing" style="margin-top:5px; width:100%;">
+                        <option value="1h">1時間以内</option>
+                        <option value="3h">3時間以内</option>
+                        <option value="6h">6時間以内</option>
+                        <option value="1d">1日前〜当日</option>
+                        <option value="3d">3日前〜当日</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <span class="setting-text">🕒 デフォルトの提出時間：</span>
+                    <div class="time-select-group" style="margin-top:5px;">
+                        <select id="setting-default-hour">
+                            <option value="">指定なし</option>
+                            <option value="06">06</option><option value="07">07</option><option value="08">08</option>
+                            <option value="09">09</option><option value="10">10</option><option value="11">11</option>
+                            <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+                            <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+                            <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                            <option value="21">21</option><option value="22">22</option><option value="23">23</option>
+                            <option value="24">24</option>
+                        </select>
+                        <span id="setting-default-colon" class="time-colon">:</span>
+                        <select id="setting-default-minute">
+                            <option value="00">00</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="border-top:1px solid #eee; padding-top:15px;">
+                    <span class="setting-text">📚 教科の追加・管理：</span>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="new-subject-input" placeholder="新しい教科名" style="flex:1;">
+                            <button id="add-subject-btn" style="padding:0 12px;">追加</button>
+                        </div>
+                        <div id="color-palette-container" style="display:flex; gap:6px; flex-wrap:wrap; padding:4px 0;">
+                            <span class="palette-circle active" style="background:#ff4d4f;" data-color="#ff4d4f"></span>
+                            <span class="palette-circle" style="background:#eb2f96;" data-color="#eb2f96"></span>
+                            <span class="palette-circle" style="background:#fa8c16;" data-color="#fa8c16"></span>
+                            <span class="palette-circle" style="background:#faee14;" data-color="#faee14"></span>
+                            <span class="palette-circle" style="background:#52c41a;" data-color="#52c41a"></span>
+                            <span class="palette-circle" style="background:#13c2c2;" data-color="#13c2c2"></span>
+                            <span class="palette-circle" style="background:#1890ff;" data-color="#1890ff"></span>
+                            <span class="palette-circle" style="background:#722ed1;" data-color="#722ed1"></span>
+                            <span class="palette-circle" style="background:#8c8c8c;" data-color="#8c8c8c"></span>
+                        </div>
+                    </div>
+                    <div id="subject-tags-container" class="subject-tags-list"></div>
+                </div>
+            </div>
+            <div style="margin-top:20px; text-align:right;">
+                <button id="modal-close-footer-btn" style="background-color:#6c757d;">闭じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="kadai-app.js"></script>
+</body>
+</html>
